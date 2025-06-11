@@ -1,12 +1,9 @@
 import  express  from 'express';
+import { formularioLogin, formularioRegistro } from '../models/usuarioController.js';
 
 const router = express.Router();
 
-//Routing
-router.get("/login", function(req,res){
-    res.render('auth/login',{
-        autenticado:true
-    })
-})
+router.get("/login", formularioLogin);
+router.get("/registro", formularioRegistro);
 
 export default router;
