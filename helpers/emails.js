@@ -10,6 +10,18 @@ const emailRegistro = async (datos) => {
             pass: process.env.EMAIL_PASS,
         },
     });
+    const { email, nombre, token } = datos;
+    //enviar email
+    await transport.sendMail({
+        from: "BienesRaices.com",
+        to: email,
+        subject: "Confirma tu cuenta en BienesRaices.com",
+        text: "Confirma tu cuenta en BienesRaices.com",
+        html:  `<p>Hola ${nombre}, comprueba tu cuenta en BienesRaices.com</p>
+                <p>Tu cuenta ya está lista, solo debes confirmarla en el siguiente enlace:</p>
+                <p><a href="${process.env.BACKEND_URL}:${process.env.PORT??3000}/auth/confirmar/${token}">Confirmar Cuenta</a><p>
+                <p>Si no creaste esta cuenta, puedes ignorar este mensaje.</p>`,
+    })
 };
 
 export { emailRegistro };

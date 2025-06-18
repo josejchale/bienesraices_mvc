@@ -1,6 +1,7 @@
 import { check, validationResult } from "express-validator";
 import modelUsuario from "../models/modelUsuario.js"
 import { generarId } from "../helpers/tokens.js";
+import { emailRegistro } from "../helpers/emails.js";
 
 const formularioLogin = (req,res)=>{
         res.render('auth/login',{
@@ -54,18 +55,45 @@ const registrarU = async (req,res)=>{
     }
 
     //almacenar usuario en la base de datos
-    await modelUsuario.create({
+    const usuario = await modelUsuario.create({
         nombre,
         email,
         password,
         token: generarId(),
     })
+
+    //enviar email de confirmación
+    emailRegistro({
+        nombre: usuario.nombre,
+        email: usuario.email,
+        token: usuario.token,
+    })
+
     //mostrar mensaje de confirmación
     res.render('templates/mensaje',{
         pagina:'Cuenta creada correctamente',
         mensaje: 'Hemos enviado un Email de confirmación, revisa tu bandeja de entrada o spam',
     })
 }
+
+// Función para confirmar la cuenta de usuraio
+    const confirmar =  async (req,res,next)=>{
+        const { token } = req.params;
+        // Verificar si el token es válido
+        const usuario = await modelUsuario.findOne({
+            where: {
+                token
+            }
+        });
+
+        if(!usuario){
+            res.render('auth/confirmar',{
+                pagina: 'Error al confirmar tu cuenta',
+                error: true,
+                mensaje: 'hubo un error al confirmar tu cuenta, intenta de nuevo',
+            })
+        }
+    }
 
 const recuperarPassword = (req,res)=>{
     res.render('auth/recuperar',{
@@ -77,5 +105,6 @@ export {
     formularioLogin,
     formularioRegistro,
     registrarU,
+    confirmar,
     recuperarPassword
 }

@@ -1,5 +1,5 @@
 import  express  from 'express';
-import { formularioLogin, formularioRegistro,registrarU, recuperarPassword } from '../controllers/usuarioController.js';
+import { formularioLogin, formularioRegistro,registrarU,confirmar, recuperarPassword } from '../controllers/usuarioController.js';
 
 const router = express.Router();
 
@@ -10,6 +10,7 @@ router.get("/login", formularioLogin);
 //registro de usuarios nuevos vista y petición
 router.get("/registro", formularioRegistro);
 router.post("/registro", registrarU);
+router.get("/confirmar/:token",confirmar);
 
 //ruta para recuperar contraseña, vista y petición
 router.get("/recuperar", recuperarPassword)
