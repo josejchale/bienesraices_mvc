@@ -10,6 +10,7 @@ const formularioLogin = (req,res)=>{
 }
 
 const formularioRegistro = (req,res)=>{
+    console.log(req.csrfToken());
     res.render('auth/registro',{
         pagina: 'Crear Cuenta'
     })
@@ -93,6 +94,15 @@ const registrarU = async (req,res)=>{
                 mensaje: 'hubo un error al confirmar tu cuenta, intenta de nuevo',
             })
         }
+
+        usuario.token= null;
+        usuario.confirmado = true;
+        await usuario.save();
+        console.log(usuario);
+        res.render('auth/confirmar',{
+                pagina: 'Cuenta confirmada',
+                mensaje: 'la cuenta ha sido confirmada correctamente, ya puedes iniciar sesión',
+            })
     }
 
 const recuperarPassword = (req,res)=>{
