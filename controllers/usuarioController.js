@@ -12,7 +12,8 @@ const formularioLogin = (req,res)=>{
 const formularioRegistro = (req,res)=>{
     console.log(req.csrfToken());
     res.render('auth/registro',{
-        pagina: 'Crear Cuenta'
+        pagina: 'Crear Cuenta',
+        csrfToken:req.csrfToken()
     })
 }
 
@@ -35,7 +36,8 @@ const registrarU = async (req,res)=>{
         usuario:{
             nombre: nombre,
             email: email,
-        }
+        },
+        csrfToken:req.csrfToken()
     })
     }
     //verificar si el usuario ya existe
@@ -51,7 +53,8 @@ const registrarU = async (req,res)=>{
         usuario:{
             nombre: nombre,
             email: email,
-        }
+        },
+        csrfToken:req.csrfToken()
     })
     }
 
