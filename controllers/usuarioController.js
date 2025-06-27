@@ -110,14 +110,71 @@ const registrarU = async (req,res)=>{
 
 const recuperarPassword = (req,res)=>{
     res.render('auth/recuperar',{
-        pagina: 'Recuperar Contraseña'
+        pagina: 'Recuperar Contraseña',
+        csrfToken:req.csrfToken()
     })
 }
 
+const resetPassword = async (req,res)=>{
+
+    // Validación del formato de email
+    await check('email').isEmail().withMessage('El email no es válido').run(req);
+
+    let resultado = validationResult(req);
+
+    if(!resultado.isEmpty()){
+        return res.render('auth/recuperar',{
+        pagina: 'Recuperar Contraseña',
+        csrfToken:req.csrfToken(),
+        errores:resultado.array(),
+    })
+    }
+    const { email } = req.body;
+    //Buscar el usuario por email
+    const usuario = await modelUsuario.findOne({
+        where:{ email }})
+
+    if(!usuario){
+        return res.render('auth/recuperar',{
+        pagina: 'Recuperar Contraseña',
+        csrfToken:req.csrfToken(),
+        errores:[{msg: 'El email no pertenece a ningún usuario'}],
+    })
+    }
+
+    
+    if(!usuario){
+    res.render('auth/recuperar',{
+        pagina: 'Recuperar Contraseña',
+        error: true,
+        csrfToken:req.csrfToken(),
+        errores:resultado.array(),
+    })
+    }
+
+    usuario.token = generarId();
+    await usuario.save();
+
+    //enviar email
+
+
+    //renderizar vista de mensaje
+}
+
+const comprobarToken = async (req,res)=>{
+
+}
+
+const nuevoPassword = async (req,res)=>{
+    
+}
 export {
     formularioLogin,
     formularioRegistro,
     registrarU,
     confirmar,
-    recuperarPassword
+    recuperarPassword,
+    resetPassword,
+    comprobarToken,
+    nuevoPassword
 }
