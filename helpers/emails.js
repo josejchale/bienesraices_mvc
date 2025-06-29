@@ -43,8 +43,8 @@ const emailRecuperar = async (datos) => {
         text: "Reestablece tu password en BienesRaices.com",
         html:  `<p>Hola ${nombre}, haz solicitado cambiar tu password en BienesRaices.com</p>
                 <p>Sigue el siguiente enlace para reestablecer tu password:</p>
-                <p><a href="${process.env.BACKEND_URL}:${process.env.PORT??3000}/auth/confirmar/${token}">Confirmar Cuenta</a><p>
-                <p>Si no creaste esta cuenta, puedes ignorar este mensaje.</p>`,
+                <p><a href="${process.env.BACKEND_URL}:${process.env.PORT??3000}/auth/recuperar/${token}">Reestablecer Password</a><p>
+                <p>Si no solicitaste este cambio, puedes ignorar este mensaje.</p>`,
     })
 };
 

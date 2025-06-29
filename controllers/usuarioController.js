@@ -1,7 +1,7 @@
 import { check, validationResult } from "express-validator";
 import modelUsuario from "../models/modelUsuario.js"
 import { generarId } from "../helpers/tokens.js";
-import { emailRegistro } from "../helpers/emails.js";
+import { emailRegistro, emailRecuperar } from "../helpers/emails.js";
 
 const formularioLogin = (req,res)=>{
         res.render('auth/login',{
@@ -10,7 +10,6 @@ const formularioLogin = (req,res)=>{
 }
 
 const formularioRegistro = (req,res)=>{
-    console.log(req.csrfToken());
     res.render('auth/registro',{
         pagina: 'Crear Cuenta',
         csrfToken:req.csrfToken()
@@ -22,7 +21,7 @@ const registrarU = async (req,res)=>{
     // Validación de campos llenos
     await check('nombre').notEmpty().withMessage('El nombre no puede estar vacío').run(req);
     await check('email').isEmail().withMessage('El email no es válido').run(req);
-    await check('password').isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 6 caracteres').run(req);
+    await check('password').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres').run(req);
     await check('repetirPassword').equals(req.body.password).withMessage('Las contraseñas no son iguales').run(req);
 
     let resultado = validationResult(req);
@@ -98,6 +97,8 @@ const registrarU = async (req,res)=>{
             })
         }
 
+        // aqui se confirma la cuenta, se borra el token y se cambia el estado de confirmado a true
+        // y se guarda el usuario actualizado
         usuario.token= null;
         usuario.confirmado = true;
         await usuario.save();
@@ -156,17 +157,54 @@ const resetPassword = async (req,res)=>{
     await usuario.save();
 
     //enviar email
-
+    emailRecuperar({
+        nombre: usuario.nombre,
+        email: email,
+        token: usuario.token,
+    })
 
     //renderizar vista de mensaje
+    res.render('templates/mensaje',{
+        pagina: 'Reestablecer Contraseña',
+        mensaje: 'Hemos enviado un email con las instrucciones para reestablecer tu contraseña',
+    })
 }
 
 const comprobarToken = async (req,res)=>{
+    const { token } = req.params;
+    const usuario = await modelUsuario.findOne({
+        where:{
+            token
+        }
+    })
+    if(!usuario){
+    return res.render('auth/confirmar',{
+        pagina: 'Restablece tu password',
+        error: true,
+        mensaje: 'Hubo un error al validar tu información, intenta de nuevo',
+        csrfToken:req.csrfToken()
+    })
+    }
 
+    //renderizar vista de formulario para nuevo password
+    res.render('auth/reset',{
+        pagina: 'Restablece tu password',
+        csrfToken:req.csrfToken()
+    })
 }
 
 const nuevoPassword = async (req,res)=>{
-    
+    await check('password').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres').run(req);
+    let resultado = validationResult(req);
+    if(!resultado.isEmpty()){
+        return res.render('auth/reset',{
+            pagina: 'Restablece tu password',
+            csrfToken:req.csrfToken(),
+            errores:resultado.array(),
+        })
+    }
+
+    console.log('guardando password...')
 }
 export {
     formularioLogin,
