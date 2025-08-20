@@ -1,4 +1,5 @@
 import { check, validationResult } from "express-validator";
+import bcrypt from 'bcrypt';
 import modelUsuario from "../models/modelUsuario.js"
 import { generarId } from "../helpers/tokens.js";
 import { emailRegistro, emailRecuperar } from "../helpers/emails.js";
@@ -6,6 +7,16 @@ import { emailRegistro, emailRecuperar } from "../helpers/emails.js";
 const formularioLogin = (req,res)=>{
         res.render('auth/login',{
         pagina: 'Iniciar Sesión',
+        csrfToken:req.csrfToken(),
+        
+        
+    })
+}
+
+const autenticar = (req,res)=>{
+        res.render('auth/login',{
+        pagina: 'Iniciar Sesión',
+        csrfToken:req.csrfToken(),
     })
 }
 
@@ -204,10 +215,32 @@ const nuevoPassword = async (req,res)=>{
         })
     }
 
-    console.log('guardando password...')
+    const { token } = req.params;
+    const { password } = req.body;
+
+    //identificar quien hace el cambio
+    const usuario = await modelUsuario.findOne({
+        where:{
+            token
+        }
+    })
+
+    //Hashear el nuevo password
+    
+    const salt = await bcrypt.genSalt(10);
+    usuario.password = await bcrypt.hash(password, salt);
+
+    usuario.token = null; //eliminar el token
+    await usuario.save(); // guardar el password actualizado
+
+    res.render('auth/confirmar',{
+        pagina: 'Contraseña modificada correctamente',
+        mensaje: 'La contraseña se ha modificado correctamente, ya puedes iniciar sesión',
+    })
 }
 export {
     formularioLogin,
+    autenticar,
     formularioRegistro,
     registrarU,
     confirmar,
