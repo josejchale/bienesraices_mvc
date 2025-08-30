@@ -13,11 +13,66 @@ const formularioLogin = (req,res)=>{
     })
 }
 
-const autenticar = (req,res)=>{
-        res.render('auth/login',{
+const autenticar = async (req,res)=>{
+
+    // Validación de campos llenos
+    await check('email').isEmail().withMessage('Esto no parece un E-mail').run(req);
+    await check('password').notEmpty().withMessage('La contraseña no puede estar vacia').run(req);
+
+    let resultado = validationResult(req);
+    const {email, password} = req.body;
+
+        if(!resultado.isEmpty()){
+        return res.render('auth/login',{
         pagina: 'Iniciar Sesión',
-        csrfToken:req.csrfToken(),
+        errores:resultado.array(),
+        usuario:{
+            email: email,
+            password: password,
+        },
+        csrfToken:req.csrfToken()
     })
+    }
+
+    //verificar si el usuario existe
+    const usuario = await modelUsuario.findOne({where:{email: email}})
+    if(!usuario){
+        return res.render('auth/login',{
+        pagina: 'Iniciar Sesión',
+        errores:[{msg: 'El usuario no existe'}],
+        usuario:{
+            email: email,
+            password: password,
+        },
+        csrfToken:req.csrfToken()
+    })
+    }
+
+    //Verificar si el usuario está confirmado
+    if(!usuario.confirmado){
+        return res.render('auth/login',{
+        pagina: 'Iniciar Sesión',
+        errores:[{msg: 'Tu cuenta no ha sido confirmada'}],
+        usuario:{
+            email: email,
+            password: password,
+        },
+        csrfToken:req.csrfToken()
+    })
+    }
+
+    //Verificar el password
+    if(!usuario.verificarPassword(password)){
+        return res.render('auth/login',{
+        pagina: 'Iniciar Sesión',
+        errores:[{msg: 'El correo o la contraseña son incorrectos'}],
+        usuario:{
+            email: email,
+            password: password,
+        },
+        csrfToken:req.csrfToken()
+    })
+    }
 }
 
 const formularioRegistro = (req,res)=>{

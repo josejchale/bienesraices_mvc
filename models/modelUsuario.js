@@ -26,4 +26,9 @@ const modelUsuario = db.define('usuarios',{
     }
 })
 
+//Metodo para comprobar el password
+modelUsuario.prototype.verificarPassword = function(password){
+    return bcrypt.compareSync(password, this.password);
+}
+
 export default modelUsuario;
