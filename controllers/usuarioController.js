@@ -1,4 +1,5 @@
 import { check, validationResult } from "express-validator";
+import jwt from "jsonwebtoken";
 import bcrypt from 'bcrypt';
 import modelUsuario from "../models/modelUsuario.js"
 import { generarId } from "../helpers/tokens.js";
@@ -46,6 +47,7 @@ const autenticar = async (req,res)=>{
         },
         csrfToken:req.csrfToken()
     })
+
     }
 
     //Verificar si el usuario está confirmado
@@ -73,6 +75,14 @@ const autenticar = async (req,res)=>{
         csrfToken:req.csrfToken()
     })
     }
+
+
+    //Autenticar el usuario
+    const token = jwt.sign({
+        nombre:'Jose',
+        empresa:'Damn',
+    },'Palabra supersecretaaaa',{expiresIn:'1d'})
+    console.log(token)
 }
 
 const formularioRegistro = (req,res)=>{
@@ -80,6 +90,9 @@ const formularioRegistro = (req,res)=>{
         pagina: 'Crear Cuenta',
         csrfToken:req.csrfToken()
     })
+
+
+    
 }
 
 const registrarU = async (req,res)=>{
@@ -168,7 +181,6 @@ const registrarU = async (req,res)=>{
         usuario.token= null;
         usuario.confirmado = true;
         await usuario.save();
-        console.log(usuario);
         res.render('auth/confirmar',{
                 pagina: 'Cuenta confirmada',
                 mensaje: 'la cuenta ha sido confirmada correctamente, ya puedes iniciar sesión',
